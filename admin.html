@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت - آتا وردپرس</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/lucide-react@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+        }
+        
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(238, 130, 238, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(99, 102, 241, 0.3), transparent 50%);
+            animation: gradientShift 15s ease infinite;
+            z-index: -1;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        #root {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Glass Card */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease;
+            animation-fill-mode: both;
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .stat-card:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-light);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        
+        .stat-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-content p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: var(--text-primary);
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+            background: var(--primary);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary-light);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+        
+        /* Action Buttons Grid */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .action-btn {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .action-btn .icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        
+        .action-btn h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .action-btn p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Input Fields */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            transform: rotate(90deg);
+            color: var(--danger);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function AdminPanel() {
+            const [stats, setStats] = useState({
+                users: 1247,
+                discounts: 8,
+                channels: 3,
+                messages: 156
+            });
+
+            const [showModal, setShowModal] = useState(null);
+            const [discountPercent, setDiscountPercent] = useState(10);
+            const [channelUsername, setChannelUsername] = useState('');
+            const [broadcastMessage, setBroadcastMessage] = useState('');
+
+            useEffect(() => {
+                // Initialize Telegram WebApp
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    window.Telegram.WebApp.expand();
+                }
+            }, []);
+
+            const generateDiscount = () => {
+                const code = 'ATAWP' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                alert(`✅ کد تخفیف ساخته شد!\n\n🎟️ کد: ${code}\n💰 تخفیف: ${discountPercent}%`);
+                setShowModal(null);
+                setStats({...stats, discounts: stats.discounts + 1});
+            };
+
+            const addChannel = () => {
+                if (!channelUsername) {
+                    alert('⚠️ لطفاً یوزرنیم کانال را وارد کنید');
+                    return;
+                }
+                alert(`✅ کانال @${channelUsername} اضافه شد!`);
+                setShowModal(null);
+                setChannelUsername('');
+                setStats({...stats, channels: stats.channels + 1});
+            };
+
+            const sendBroadcast = () => {
+                if (!broadcastMessage) {
+                    alert('⚠️ لطفاً پیام را وارد کنید');
+                    return;
+                }
+                alert(`✅ پیام به ${stats.users} کاربر ارسال شد!`);
+                setShowModal(null);
+                setBroadcastMessage('');
+                setStats({...stats, messages: stats.messages + 1});
+            };
+
+            return (
+                <div>
+                    {/* Header */}
+                    <div className="header">
+                        <h1>🎛️ پنل مدیریت</h1>
+                        <p>آتا وردپرس - مدیریت حرفه‌ای ربات</p>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="stats-grid">
+                        <div className="stat-card">
+                            <div className="stat-icon" style={{background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}}>
+                                👥
+                            </div>
+                            <div className="stat-content">
+                                <h3>{stats.users.toLocaleString('fa-IR')}</h3>
+                                <p>کاربران ربات</p>
+                            </div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-icon" style={{background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'}}>
+                                🎟️
+                            </div>
+                            <div className="stat-content">
+                                <h3>{stats.discounts.toLocaleString('fa-IR')}</h3>
+                                <p>کدهای تخفیف</p>
+                            </div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-icon" style={{background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'}}>
+                                📢
+                            </div>
+                            <div className="stat-content">
+                                <h3>{stats.channels.toLocaleString('fa-IR')}</h3>
+                                <p>کانال‌های جوین</p>
+                            </div>
+                        </div>
+
+                        <div className="stat-card">
+                            <div className="stat-icon" style={{background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'}}>
+                                📨
+                            </div>
+                            <div className="stat-content">
+                                <h3>{stats.messages.toLocaleString('fa-IR')}</h3>
+                                <p>پیام‌های ارسالی</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="glass-card">
+                        <h2 style={{marginBottom: '20px'}}>⚡ عملیات سریع</h2>
+                        <div className="actions-grid">
+                            <div className="action-btn" onClick={() => setShowModal('discount')}>
+                                <div className="icon">💳</div>
+                                <h4>کد تخفیف جدید</h4>
+                                <p>ساخت کد تخفیف رندوم</p>
+                            </div>
+
+                            <div className="action-btn" onClick={() => setShowModal('channel')}>
+                                <div className="icon">📢</div>
+                                <h4>افزودن کانال</h4>
+                                <p>جوین اجباری</p>
+                            </div>
+
+                            <div className="action-btn" onClick={() => setShowModal('broadcast')}>
+                                <div className="icon">📨</div>
+                                <h4>ارسال همگانی</h4>
+                                <p>پیام به همه کاربران</p>
+                            </div>
+
+                            <div className="action-btn" onClick={() => alert('🎨 قابلیت ساخت دکمه در نسخه بعدی!')}>
+                                <div className="icon">🎨</div>
+                                <h4>دکمه سفارشی</h4>
+                                <p>ساخت دکمه‌های جدید</p>
+                            </div>
+
+                            <div className="action-btn" onClick={() => alert('📊 گزارش جامع در حال آماده‌سازی...')}>
+                                <div className="icon">📊</div>
+                                <h4>گزارش‌گیری</h4>
+                                <p>آمار تفصیلی</p>
+                            </div>
+
+                            <div className="action-btn" onClick={() => alert('⚙️ تنظیمات پیشرفته')}>
+                                <div className="icon">⚙️</div>
+                                <h4>تنظیمات</h4>
+                                <p>پیکربندی ربات</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modals */}
+                    {showModal === 'discount' && (
+                        <div className="modal" onClick={() => setShowModal(null)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2>💳 ساخت کد تخفیف</h2>
+                                    <button className="close-btn" onClick={() => setShowModal(null)}>×</button>
+                                </div>
+
+                                <div className="input-group">
+                                    <label>درصد تخفیف:</label>
+                                    <input 
+                                        type="number" 
+                                        value={discountPercent}
+                                        onChange={(e) => setDiscountPercent(e.target.value)}
+                                        min="1"
+                                        max="100"
+                                        placeholder="مثلاً: 20"
+                                    />
+                                </div>
+
+                                <button className="btn btn-primary" style={{width: '100%'}} onClick={generateDiscount}>
+                                    ✨ ساخت کد تخفیف
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showModal === 'channel' && (
+                        <div className="modal" onClick={() => setShowModal(null)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2>📢 افزودن کانال</h2>
+                                    <button className="close-btn" onClick={() => setShowModal(null)}>×</button>
+                                </div>
+
+                                <div className="input-group">
+                                    <label>یوزرنیم کانال:</label>
+                                    <input 
+                                        type="text" 
+                                        value={channelUsername}
+                                        onChange={(e) => setChannelUsername(e.target.value)}
+                                        placeholder="مثلاً: atawp_official"
+                                    />
+                                </div>
+
+                                <button className="btn btn-success" style={{width: '100%'}} onClick={addChannel}>
+                                    ➕ افزودن کانال
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showModal === 'broadcast' && (
+                        <div className="modal" onClick={() => setShowModal(null)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2>📨 ارسال همگانی</h2>
+                                    <button className="close-btn" onClick={() => setShowModal(null)}>×</button>
+                                </div>
+
+                                <div className="input-group">
+                                    <label>متن پیام:</label>
+                                    <textarea 
+                                        value={broadcastMessage}
+                                        onChange={(e) => setBroadcastMessage(e.target.value)}
+                                        rows="5"
+                                        placeholder="پیام خود را اینجا بنویسید..."
+                                    ></textarea>
+                                </div>
+
+                                <button className="btn btn-primary" style={{width: '100%'}} onClick={sendBroadcast}>
+                                    📤 ارسال به {stats.users.toLocaleString('fa-IR')} کاربر
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<AdminPanel />, document.getElementById('root'));
+    </script>
+</body>
+</html>

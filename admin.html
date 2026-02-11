@@ -390,12 +390,26 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
+        // تابع کمکی برای خواندن پارامترها از URL
+        const useQueryParams = () => {
+            return new URLSearchParams(window.location.search);
+        };
+
         function AdminPanel() {
+            const query = useQueryParams();
+            
+            // گرفتن مقادیر واقعی از URL (آمار تزریق شده توسط ربات)
+            const initialUsers = parseInt(query.get('users')) || 0;
+            const initialDiscounts = parseInt(query.get('discounts')) || 0;
+            const initialChannels = parseInt(query.get('channels')) || 0;
+            const initialMessages = parseInt(query.get('messages')) || 0;
+
+            // تنظیم State با داده‌های واقعی (در WebApp این داده‌ها فقط تا Refresh صفحه معتبرند)
             const [stats, setStats] = useState({
-                users: 1247,
-                discounts: 8,
-                channels: 3,
-                messages: 156
+                users: initialUsers,
+                discounts: initialDiscounts,
+                channels: initialChannels,
+                messages: initialMessages
             });
 
             const [showModal, setShowModal] = useState(null);
@@ -414,8 +428,11 @@
             const generateDiscount = () => {
                 const code = 'ATAWP' + Math.random().toString(36).substring(2, 8).toUpperCase();
                 alert(`✅ کد تخفیف ساخته شد!\n\n🎟️ کد: ${code}\n💰 تخفیف: ${discountPercent}%`);
+                
+                // در WebApp، باید آمار را دستی آپدیت کنیم
+                setStats(prevStats => ({...prevStats, discounts: prevStats.discounts + 1}));
+                
                 setShowModal(null);
-                setStats({...stats, discounts: stats.discounts + 1});
             };
 
             const addChannel = () => {
@@ -424,9 +441,12 @@
                     return;
                 }
                 alert(`✅ کانال @${channelUsername} اضافه شد!`);
+                
+                // در WebApp، باید آمار را دستی آپدیت کنیم
+                setStats(prevStats => ({...prevStats, channels: prevStats.channels + 1}));
+                
                 setShowModal(null);
                 setChannelUsername('');
-                setStats({...stats, channels: stats.channels + 1});
             };
 
             const sendBroadcast = () => {
@@ -434,10 +454,13 @@
                     alert('⚠️ لطفاً پیام را وارد کنید');
                     return;
                 }
-                alert(`✅ پیام به ${stats.users} کاربر ارسال شد!`);
+                alert(`✅ پیام به ${stats.users.toLocaleString('fa-IR')} کاربر ارسال شد!`);
+                
+                // در WebApp، باید آمار را دستی آپدیت کنیم
+                setStats(prevStats => ({...prevStats, messages: prevStats.messages + 1}));
+                
                 setShowModal(null);
                 setBroadcastMessage('');
-                setStats({...stats, messages: stats.messages + 1});
             };
 
             return (
